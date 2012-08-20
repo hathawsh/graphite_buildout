@@ -1,0 +1,59 @@
+
+#
+# ${buildout:edit-warning}
+#
+
+[unix_http_server]
+file = ${buildout:directory}/var/run/supervisord.sock
+
+[supervisorctl]
+serverurl = unix://${buildout:directory}/var/run/supervisord.sock
+
+[supervisord]
+logfile = ${buildout:directory}/var/log/supervisord.log
+logfile_maxbytes = 1MB
+logfile_backups = 10
+loglevel = info
+pidfile = ${buildout:directory}/var/run/supervisord.pid
+nodaemon = false
+childlogdir = ${buildout:directory}/var/log
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory =
+    supervisor.rpcinterface:make_main_rpcinterface
+
+[program:carbon]
+command = ${graphite:virtualenv}/bin/carbon-cache.py --debug start
+directory = ${graphite:virtualenv}
+stdout_logfile = ${buildout:directory}/var/log/carbon.log
+stdout_logfile_maxbytes = 1MB
+stdout_logfile_backups = 10
+stderr_logfile = ${buildout:directory}/var/log/carbon_error.log
+stderr_logfile_maxbytes = 1MB
+stderr_logfile_backups = 10
+
+[program:graphite]
+command = ${graphite:virtualenv}/bin/django-admin.py runserver
+    --noreload
+    --pythonpath=${graphite:virtualenv}/webapp
+    --settings=graphite.settings
+    ${:graphite_addr}
+directory = ${graphite:virtualenv}
+stdout_logfile = ${buildout:directory}/var/log/graphite.log
+stdout_logfile_maxbytes = 1MB
+stdout_logfile_backups = 10
+stderr_logfile = ${buildout:directory}/var/log/graphite_error.log
+stderr_logfile_maxbytes = 1MB
+stderr_logfile_backups = 10
+
+[program:statsd]
+command = ${nodejs:location}/bin/node
+    ${statsd:destination}/stats.js
+    ${buildout:directory}/etc/statsd-config.js
+directory = ${buildout:directory}
+stdout_logfile = ${buildout:directory}/var/log/statsd.log
+stdout_logfile_maxbytes = 1MB
+stdout_logfile_backups = 10
+stderr_logfile = ${buildout:directory}/var/log/statsd_error.log
+stderr_logfile_maxbytes = 1MB
+stderr_logfile_backups = 10

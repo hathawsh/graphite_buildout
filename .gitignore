@@ -1,8 +1,10 @@
 .installed.cfg
 bin
+download
 eggs
 include
 lib
 local
 parts
 var
+etc/supervisord.conf
